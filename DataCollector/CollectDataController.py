@@ -121,6 +121,7 @@ class PlottingManagement():
         curMode = TrigBase.GetSampleMode()
         return curMode
 
-    def setSampleMode(self,curSensor,setMode):
+    def setSampleMode(self,setMode):
         """Sets the sample mode for the selected sensor"""
-        TrigBase.SetSampleMode(curSensor,setMode)
+        for i in range(len(self.getCurMode)):
+            TrigBase.SetSampleMode(i,setMode)
