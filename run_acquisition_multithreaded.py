@@ -1,4 +1,4 @@
-from dummy_multithread import *
+from emg_acquisition_multithread import *
 
 
 test_logger = DataLogger(TrigBase)
@@ -8,4 +8,5 @@ test_logger.Scan_Callback()
 test_logger.setSampleMode("EMG raw (4370 Hz), skin check (74 Hz), +/-11mv, 10-850Hz")
 test_logger.Start_Callback(5)
 
+import output.analyze
 print("Done")
