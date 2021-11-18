@@ -81,7 +81,9 @@ import numpy as np
 from nidaqmx import stream_writers
 task = nidaqmx.Task()
 task.ao_channels.add_ao_voltage_chan('Dev1/ao0')
-task.timing.cfg_samp_clk_timing(5000,samps_per_chan=2)
+task.timing.cfg_samp_clk_timing(5000,samps_per_chan=2)   
+#the samps per channel argument is pretty important because if:
+#  (number of input samples to write) < (samps per channel), then the daq will just loop.
 
 stream = stream_writers.AnalogSingleChannelWriter(task.out_stream,auto_start=True)
 array = np.zeros(2,dtype=np.float64)
