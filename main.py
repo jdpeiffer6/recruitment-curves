@@ -15,3 +15,5 @@ jdstreamer.Scan_Callback()
 input("Ready?")
 jdstreamer.Start_Callback()
 print("Program done " + str(threading.get_native_id()))
+
+# TODO: make my own class that can multithread collection and logging
