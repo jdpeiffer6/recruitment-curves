@@ -1,7 +1,7 @@
 from DataCollector.CollectDataController import *
 from Display.Display import jdplot
 
-plotter = jdplot()
+plotter = jdplot()   # should rename this to logging
 jdstreamer = PlottingManagement(plotter)
 
 jdstreamer.Connect_Callback()
