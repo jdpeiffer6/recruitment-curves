@@ -11,5 +11,6 @@ x=np.linspace(0,5,num=mydata.shape[1])
 for i in range(mydata.shape[0]):
     plt.plot(x,mydata[i,:],alpha=0.6)
 
+plt.xlabel("Time (s)")
 plt.show()
 

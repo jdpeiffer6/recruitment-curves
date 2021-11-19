@@ -41,16 +41,32 @@ class DataLogger():
             if self.TrigBase.CheckDataQueue():
                 DataOut = self.TrigBase.PollData()
                 if len(DataOut) > 0:  # Check for lost Packets
-                    outArr = [[] for i in range(len(DataOut))]
-                    for j in range(len(DataOut)):
-                        for k in range(len(DataOut[j])):
-                            outBuf = DataOut[j][k]
-                            outArr[j].append(np.asarray(outBuf))
-                    self.data_queue.append([outArr[jd] for jd in self.dataStreamIdx])
-                    # TODO: this could be optimized because right now we are grabbing the accelrometer data too. If we never collect it, it may not be a problem.
-                    #could also use slicing: list[0:5:4]
+                    outArr = [[] for i in range(len(self.dataStreamIdx))]
+                    for j in range(len(self.dataStreamIdx)):
+                        # right now getting data from 0, 2, ... channels (found in self.dataStreamIdx)
+                        outArr[j].append(np.asarray(DataOut[self.dataStreamIdx[j]][0]))
+                        # TODO: this may not actuall be the case so watch out
+                    self.data_queue.append(outArr)
         print("Finished getting data " + str(threading.get_native_id()))
     
+    # SOMEWHAT MESSED WITH
+    # def getDataFromSensors(self):
+    #     """Gets data from trigno base"""
+    #     print("\n\n\n\n\nGetting Data From sensors " + str(threading.get_native_id()))
+    #     while not self.pauseFlag:
+    #         #if there is data to get
+    #         if self.TrigBase.CheckDataQueue():
+    #             DataOut = self.TrigBase.PollData()
+    #             if len(DataOut) > 0:  # Check for lost Packets
+    #                 outArr = [[] for i in range(len(DataOut))]
+    #                 for j in range(len(DataOut)):
+    #                     for k in range(len(DataOut[j])):
+    #                         outBuf = DataOut[j][k]
+    #                         outArr[j].append(np.asarray(outBuf))
+    #                 self.data_queue.append([outArr[jd] for jd in self.dataStreamIdx])
+    #                 # TODO: this could be optimized because right now we are grabbing the accelrometer data/EMG B too. If we never collect it, it may not be a problem.
+    #                 #could also use slicing: list[0:5:4]
+    #     print("Finished getting data " + str(threading.get_native_id()))
 
     #NOT MESSED WITH
     # def getDataFromSensors(self):
@@ -130,6 +146,7 @@ class DataLogger():
 
         self.sampleRates = [[] for i in range(self.SensorsFound)]
 
+        # TODO: maybe figure out if I can trigger collection with this?
         TrigBase.StreamData(index, newTransform, 2)
 
         self.dataStreamIdx = []
@@ -150,6 +167,9 @@ class DataLogger():
 
         self.setCollectionLen(plotCount,int(self.sampleRates[0][0][0])+1,collection_time)
         # TODO: figure out why this adds EMG and EMG B when switch to just raw EMG?
+
+
+        # sleep(2)  # TODO: figure out why there is a random rise in this data
         self.threadManager()
 
     def Stop_Callback(self):
