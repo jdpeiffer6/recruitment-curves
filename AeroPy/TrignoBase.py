@@ -2,11 +2,15 @@
 This class creates an instance of the Trigno base. Put in your key and license here
 """
 import clr
+# if this fails, reference https://stackoverflow.com/questions/28840880/pythonnet-filenotfoundexception-unable-to-find-assembly
 clr.AddReference("/resources/DelsysAPI")
 clr.AddReference("System.Collections")
 
-
 from Aero import AeroPy
+
+#goof
+import DelsysAPI
+# trigger = DelsysAPI.Utils.TrignoTrigger()
 
 key = "MIIBKjCB4wYHKoZIzj0CATCB1wIBATAsBgcqhkjOPQEBAiEA/////wAAAAEAAAAAAAAAAAAAAAD///////////////8wWwQg/////wAAAAEAAAAAAAAAAAAAAAD///////////////wEIFrGNdiqOpPns+u9VXaYhrxlHQawzFOw9jvOPD4n0mBLAxUAxJ02CIbnBJNqZnjhE50mt4GffpAEIQNrF9Hy4SxCR/i85uVjpEDydwN9gS3rM6D0oTlF2JjClgIhAP////8AAAAA//////////+85vqtpxeehPO5ysL8YyVRAgEBA0IABGss/cHpafl/kdAPODaITYOw7WcaYR5YDwkkEMFQiCk2qK+0AP0x+t7/QjJybHHlP5HkRlkua4mBTg8NgUkEeLY="
 license = "<License>"\

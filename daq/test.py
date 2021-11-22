@@ -1,7 +1,8 @@
-from enum import auto
-import nidaqmx
-import numpy as np
+# from enum import auto
+# import nidaqmx
+# import numpy as np
 
+# region stupid
 # t = np.linspace(start = 0, stop = 100, num = 10000)
 # A = 5
 # y = A*np.sin(t)
@@ -75,9 +76,11 @@ import numpy as np
 # stream.write_many_sample(np.array([5,0],dtype=np.float64))
 # task.stop()
 # task.close()
-
+# endregion
 
 #stream writer with hardware timer. this is how i think i will do it
+import nidaqmx
+import numpy as np
 from nidaqmx import stream_writers
 task = nidaqmx.Task()
 task.ao_channels.add_ao_voltage_chan('Dev1/ao0')
@@ -89,7 +92,39 @@ stream = stream_writers.AnalogSingleChannelWriter(task.out_stream,auto_start=Tru
 array = np.zeros(2,dtype=np.float64)
 array[0] = 5
 
+
 stream.write_many_sample(array)
 task.wait_until_done()
 task.stop()
 task.close()
+
+# i do not think our device does harware triggering
+# import nidaqmx
+# from nidaqmx import constants
+# import numpy as np
+
+# def event_callback(task_handle, signal_type, callback_data):
+#     print("Called")
+
+# with nidaqmx.Task() as task:
+#     task.ao_channels.add_ao_voltage_chan('Dev1/ao0')
+#     task.timing.cfg_samp_clk_timing(1)
+#     task.triggers.start_trigger.cfg_dig_edge_start_trig('Dev1/port2/line0:0')
+#     # task.register_signal_event(constants.TriggerType.DIGITAL_EDGE,event_callback)
+#     task.start()
+
+
+# sw timed reading
+# import nidaqmx
+
+# from nidaqmx.constants import (LineGrouping)
+
+# with nidaqmx.Task() as task:
+#     task.di_channels.add_di_chan('Dev1/port2/line0',line_grouping=LineGrouping.CHAN_PER_LINE)
+
+#     print('1 Channel N Samples Read: ')
+#     data = task.read(number_of_samples_per_channel=100)
+#     while not any(data):
+#         data = task.read(number_of_samples_per_channel=100)
+#         task.stop()
+#     print("Triggered")

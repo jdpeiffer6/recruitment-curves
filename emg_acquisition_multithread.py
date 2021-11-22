@@ -15,32 +15,53 @@ base = TrignoBase()
 TrigBase = base.BaseInstance
 
 class DataLogger():
-    def __init__(self, trigbase):
+    def __init__(self, trigbase,daq):
         self.TrigBase = trigbase
+        self.daq = daq
+
         self.packetCount = 0
         self.sampleCount = 0
 
         self.data_queue = deque()
+        self.stimcount = 0
 
     # region setup
     def setCollectionLen(self, nChan, fs, collection_time ):
         """Allocates empty data container for streaming based on number of seconds and channels"""
         # np arrays are row-major
-        self.data_log = np.zeros([nChan, fs*(collection_time+1)])
+        self.data_log = np.zeros([nChan, int(fs*(collection_time)+400)])
         self.dataLogIdx = 0
-        self.dataLogMax = fs*collection_time
+        self.dataLogMax = int(fs*(collection_time)+1)
+
+        self.nChan = nChan
+        self.fs = fs
+        self.collection_time = collection_time
+
+    def resetCollectionLen(self):
+        #overloaded version
+        self.data_queue = deque()
+        self.data_log = np.zeros([self.nChan, int(self.fs*(self.collection_time)+400)])
+        self.dataLogIdx = 0
 
     # endregion
 
     # region data streaming and threading
     def getDataFromSensors(self):
+        #-5.500083924620432
+        # if len(DataOut) > 0 and DataOut[0][0][0] != -5.500083924620432:  # Check for lost Packets
+
+
         """Gets data from trigno base"""
         print("\n\n\n\n\nGetting Data From sensors " + str(threading.get_native_id()))
+        trigged = False
         while not self.pauseFlag:
             #if there is data to get
             if self.TrigBase.CheckDataQueue():
                 DataOut = self.TrigBase.PollData()
-                if len(DataOut) > 0:  # Check for lost Packets
+                if len(DataOut) > 0 and DataOut[0][0][0] != -5.500083924620432:
+                    if not trigged:
+                        self.daq.trig()
+                        trigged = True
                     outArr = [[] for i in range(len(self.dataStreamIdx))]
                     for j in range(len(self.dataStreamIdx)):
                         # right now getting data from 0, 2, ... channels (found in self.dataStreamIdx)
@@ -48,42 +69,6 @@ class DataLogger():
                         # TODO: this may not actuall be the case so watch out
                     self.data_queue.append(outArr)
         print("Finished getting data " + str(threading.get_native_id()))
-    
-    # SOMEWHAT MESSED WITH
-    # def getDataFromSensors(self):
-    #     """Gets data from trigno base"""
-    #     print("\n\n\n\n\nGetting Data From sensors " + str(threading.get_native_id()))
-    #     while not self.pauseFlag:
-    #         #if there is data to get
-    #         if self.TrigBase.CheckDataQueue():
-    #             DataOut = self.TrigBase.PollData()
-    #             if len(DataOut) > 0:  # Check for lost Packets
-    #                 outArr = [[] for i in range(len(DataOut))]
-    #                 for j in range(len(DataOut)):
-    #                     for k in range(len(DataOut[j])):
-    #                         outBuf = DataOut[j][k]
-    #                         outArr[j].append(np.asarray(outBuf))
-    #                 self.data_queue.append([outArr[jd] for jd in self.dataStreamIdx])
-    #                 # TODO: this could be optimized because right now we are grabbing the accelrometer data/EMG B too. If we never collect it, it may not be a problem.
-    #                 #could also use slicing: list[0:5:4]
-    #     print("Finished getting data " + str(threading.get_native_id()))
-
-    #NOT MESSED WITH
-    # def getDataFromSensors(self):
-    #     """Gets data from trigno base"""
-    #     print("Getting Data From sensors " + str(threading.get_native_id()))
-    #     while not self.pauseFlag:
-    #         #if there is data to get
-    #         if self.TrigBase.CheckDataQueue():
-    #             DataOut = self.TrigBase.PollData()
-    #             if len(DataOut) > 0:  # Check for lost Packets
-    #                 outArr = [[] for i in range(len(DataOut))]
-    #                 for j in range(len(DataOut)):
-    #                     for k in range(len(DataOut[j])):
-    #                         outBuf = DataOut[j][k]
-    #                         outArr[j].append(np.asarray(outBuf))
-    #                 self.data_queue.append(outArr)
-    #     print("Finished getting data " + str(threading.get_native_id()))
 
     def logDataFromQueue(self):
         """Gets data from self.data_queue and stores it in array. When collection is finished, stops collection."""
@@ -98,10 +83,13 @@ class DataLogger():
                     self.data_log[i, self.dataLogIdx:(self.dataLogIdx+newDataLen)] = newData[i][0]
                 self.dataLogIdx += newDataLen
                 if self.dataLogIdx > self.dataLogMax:
-                    print("Completed Collection " + str(threading.get_native_id()))
                     self.pauseFlag = True
-                    self.Stop_Callback()
-                    np.save("output\\dummy_multithread.npy",self.data_log[:,0:self.dataLogIdx])
+                    print("Completed Collection " + str(threading.get_native_id()))
+                    # self.Stop_Callback()
+                    np.save("output\\dummy_multithread_" + str(self.stimcount) +"_data.npy",self.data_log[:,0:self.dataLogIdx])
+                    self.stimcount += 1
+                    self.resetCollectionLen()
+        self.pauseFlag = False
                     
     def threadManager(self):
         """Starts thread to run data retrevial and data logging."""
@@ -126,6 +114,9 @@ class DataLogger():
         f = TrigBase.ScanSensors().Result
         self.nameList = TrigBase.ListSensorNames()
         self.SensorsFound = len(self.nameList)
+        if self.SensorsFound == 0:
+            print("Error: No Sensors Connected!")
+            return
 
         TrigBase.ConnectSensors()
         return self.nameList
@@ -169,7 +160,10 @@ class DataLogger():
         # TODO: figure out why this adds EMG and EMG B when switch to just raw EMG?
 
 
-        # sleep(2)  # TODO: figure out why there is a random rise in this data
+        sleep(2)  # TODO: figure out why there is a random rise in this data
+        # self.threadManager()
+    
+    def trig(self):
         self.threadManager()
 
     def Stop_Callback(self):
