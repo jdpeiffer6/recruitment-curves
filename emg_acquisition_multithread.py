@@ -53,15 +53,16 @@ class DataLogger():
 
         """Gets data from trigno base"""
         print("\n\n\n\n\nGetting Data From sensors " + str(threading.get_native_id()))
-        trigged = False
+        self.trigged = False
         while not self.pauseFlag:
             #if there is data to get
             if self.TrigBase.CheckDataQueue():
                 DataOut = self.TrigBase.PollData()
                 if len(DataOut) > 0 and DataOut[0][0][0] != -5.500083924620432:
-                    if not trigged:
+                # if len(DataOut) > 0:
+                    if not self.trigged:
                         self.daq.trig()
-                        trigged = True
+                        self.trigged = True
                     outArr = [[] for i in range(len(self.dataStreamIdx))]
                     for j in range(len(self.dataStreamIdx)):
                         # right now getting data from 0, 2, ... channels (found in self.dataStreamIdx)
