@@ -54,13 +54,15 @@ class DataLogger():
         """Gets data from trigno base"""
         print("\n\n\n\n\nGetting Data From sensors " + str(threading.get_native_id()))
         self.trigged = False
+        trigDelay = 0
         while not self.pauseFlag:
             #if there is data to get
             if self.TrigBase.CheckDataQueue():
                 DataOut = self.TrigBase.PollData()
                 if len(DataOut) > 0 and DataOut[0][0][0] != -5.500083924620432:
                 # if len(DataOut) > 0:
-                    if not self.trigged:
+                    trigDelay += 1
+                    if not self.trigged and trigDelay > 6:
                         self.daq.trig()
                         self.trigged = True
                     outArr = [[] for i in range(len(self.dataStreamIdx))]
@@ -158,7 +160,6 @@ class DataLogger():
                 idxVal += 1
 
         self.setCollectionLen(plotCount,int(self.sampleRates[0][0][0])+1,collection_time)
-        # TODO: figure out why this adds EMG and EMG B when switch to just raw EMG?
 
 
         sleep(2)  # TODO: figure out why there is a random rise in this data
@@ -170,8 +171,53 @@ class DataLogger():
     def Stop_Callback(self):
         """Callback to stop the data stream"""
         TrigBase.StopData()
-        self.pauseFlag = True
         
+    # endregion
+
+    # region test streaming
+    def test_setup(self,collection_time):
+        """Callback to start the data stream from Sensors. Create output destination. And start threaded data collection."""
+
+        self.collection_time = collection_time
+        self.pauseFlag = False
+        self.newTransform = TrigBase.CreateTransform("raw")
+        self.index = List[Int32]()
+
+        TrigBase.ClearSensorList()
+
+        for i in range(self.SensorsFound):
+            selectedSensor = TrigBase.GetSensorObject(i)
+            TrigBase.AddSensortoList(selectedSensor)
+            self.index.Add(i)
+
+        self.sampleRates = [[] for i in range(self.SensorsFound)]
+
+        TrigBase.StreamData(self.index,self.newTransform,2)
+
+        self.dataStreamIdx = []
+        plotCount = 0
+        idxVal = 0
+        for i in range(self.SensorsFound):
+            selectedSensor = TrigBase.GetSensorObject(i)
+            for channel in range(len(selectedSensor.TrignoChannels)):
+                self.sampleRates[i].append((selectedSensor.TrignoChannels[channel].SampleRate,
+                                           selectedSensor.TrignoChannels[channel].Name))
+                print(selectedSensor.TrignoChannels[channel].Name)
+                if "EMG" == selectedSensor.TrignoChannels[channel].Name:
+                    self.dataStreamIdx.append(idxVal)
+                    plotCount+=1
+                idxVal += 1
+        self.plotCount = plotCount
+
+        sleep(2)  # TODO: figure out why there is a random rise in this data
+        TrigBase.StopData()
+
+    def test_run(self):
+        self.setCollectionLen(self.plotCount,int(self.sampleRates[0][0][0])+1,self.collection_time)
+        TrigBase.StreamData(self.index, self.newTransform, 2)
+        self.threadManager()
+        self.Stop_Callback()
+
     # endregion
 
     # region Helper functions

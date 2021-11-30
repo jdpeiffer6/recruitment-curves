@@ -52,9 +52,10 @@ for file in filez:
     mydata.append(np.load(file))
 
 maxes = []
+sensor_with_max = 1
 for data in mydata:
     # np.where(arr == np.amax(arr))
-    maxes.append(np.where(data[0,:] == np.max(data[0,:]))[0][0])
+    maxes.append(np.where(data[sensor_with_max,:] == np.max(data[sensor_with_max,:]))[0][0])
 
 shifted_data=[]
 for i in range(len(maxes)):
