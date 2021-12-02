@@ -23,6 +23,7 @@ class DataLogger():
         self.sampleCount = 0
 
         self.data_queue = deque()
+        self.stim_queue = deque()
         self.stimcount = 0
 
     # region setup
@@ -30,6 +31,7 @@ class DataLogger():
         """Allocates empty data container for streaming based on number of seconds and channels"""
         # np arrays are row-major
         self.data_log = np.zeros([nChan, int(fs*(collection_time)+400)])
+        self.stim_log = np.zeros(int(fs*(collection_time)+400))
         self.dataLogIdx = 0
         self.dataLogMax = int(fs*(collection_time)+1)
 
@@ -40,7 +42,9 @@ class DataLogger():
     def resetCollectionLen(self):
         #overloaded version
         self.data_queue = deque()
+        self.stim_queue = deque()
         self.data_log = np.zeros([self.nChan, int(self.fs*(self.collection_time)+400)])
+        self.stim_log = np.zeros(int(self.fs*(self.collection_time)+400))
         self.dataLogIdx = 0
 
     # endregion
@@ -62,7 +66,7 @@ class DataLogger():
                 if len(DataOut) > 0 and DataOut[0][0][0] != -5.500083924620432:
                 # if len(DataOut) > 0:
                     trigDelay += 1
-                    if not self.trigged and trigDelay > 6:
+                    if not self.trigged and trigDelay > 3:
                         self.daq.trig()
                         self.trigged = True
                     outArr = [[] for i in range(len(self.dataStreamIdx))]
@@ -71,6 +75,7 @@ class DataLogger():
                         outArr[j].append(np.asarray(DataOut[self.dataStreamIdx[j]][0]))
                         # TODO: this may not actuall be the case so watch out
                     self.data_queue.append(outArr)
+                    self.stim_queue.append(self.trigged)
         print("Finished getting data " + str(threading.get_native_id()))
 
     def logDataFromQueue(self):
@@ -79,17 +84,20 @@ class DataLogger():
         while not self.pauseFlag:
             if len(self.data_queue) >= 1:
                 newData = self.data_queue.popleft()
+                newStim = self.stim_queue.popleft()
                 newDataLen = len(newData[0][0])
                 if len(newData) != self.data_log.shape[0]:
                     print("ERROR: Number of data streams does not match. logDataFromQueue")
                 for i in range(len(newData)):
                     self.data_log[i, self.dataLogIdx:(self.dataLogIdx+newDataLen)] = newData[i][0]
+                self.stim_log[self.dataLogIdx] = newStim
                 self.dataLogIdx += newDataLen
                 if self.dataLogIdx > self.dataLogMax:
                     self.pauseFlag = True
                     print("Completed Collection " + str(threading.get_native_id()))
                     # self.Stop_Callback()
                     np.save("output\\dummy_multithread_" + str(self.stimcount) +"_data.npy",self.data_log[:,0:self.dataLogIdx])
+                    np.save("output\\dummy_multithread_" + str(self.stimcount) +"_stim.npy",self.stim_log[0:self.dataLogIdx])
                     self.stimcount += 1
                     self.resetCollectionLen()
         self.pauseFlag = False
