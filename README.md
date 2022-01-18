@@ -32,7 +32,7 @@ To  install  dependencies use with Python 3.8.6rc1:
 &nbsp;
 ## daq  
 ### **test**: right now is just messing around with controlling the daq.  
-### **daq**: contains a class to interact with the daq  
+### **daq**: contains a class to interact with the daq.  
 *mydaq*  
 - **trig**: sends a pulse to the stimulator to direct a stim using *write_many_sample* member function.
 
