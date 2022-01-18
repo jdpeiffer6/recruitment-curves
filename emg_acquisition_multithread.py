@@ -133,7 +133,7 @@ class DataLogger():
         return self.nameList
 
     def Start_Callback(self,collection_time):
-        """Callback to start the data stream from Sensors. Create output destination. And start threaded data collection."""
+        """Callback to start the data stream from Sensors. Create output destination."""
 
         self.pauseFlag = False
         newTransform = TrigBase.CreateTransform("raw")
