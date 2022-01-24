@@ -6,7 +6,7 @@
 # filez = glob.glob("output\\*data.npy")
 # # meta = glob.glob("*meta.npy")
 
-# mydata = np.load("output\\dummy_multithread_0_data.npy")
+# mydata = np.load("output\good_data\dummy_multithread_0_data.npy")
 # fig, axs = plt.subplots(mydata.shape[0]+1, 1)
 # x=np.linspace(0,0.1,num=mydata.shape[1])
 # x=x*1000
@@ -35,7 +35,7 @@
 # plt.xlabel("Time (ms)")
 # plt.show()
 
-
+#TODO ask JD for a rundown of this script and implementing in powershell. 
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -89,4 +89,4 @@ for i in range(len(electrode_locs)):
 plt.xlabel("Time (ms)")
 plt.show()
 
-#this is a test
+this is a test
