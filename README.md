@@ -36,3 +36,10 @@ To  install  dependencies use with Python 3.8.6rc1:
 *mydaq*  
 - **trig**: sends a pulse to the stimulator to direct a stim using *write_many_sample* member function.
 
+## Device Manager
+### Start_Callback: Starts Data Stream from Sensors.
+### GetData: Retrives data from sensors and stores in an array.
+### ProcessData: Calls GetData, places output array into a deque.
+### getSampleModes(sensorIdx): gives list of available modes for that sensor.
+### getCurModes: gets current mode of the sensor.
+### setSampleMode: Sets sampling configuration for sensor, must be configured as follows ("EMG raw (4370 Hz), skin check (74 Hz), +/-11mv, 10-850Hz")
