@@ -9,7 +9,7 @@ app = QtGui.QApplication([])            # you MUST do this once (initialize thin
 ###################r
 
 win = pg.GraphicsLayoutWidget(show=True,title="Signal from serial port") # creates a window
-p = win.addPlot(title="Realtime plot",row=1,col=1)  # creates empty space for the plot in the window
+p = win.addPlot(title="First plot",row=1,col=1)  # creates empty space for the plot in the window
 p2 = win.addPlot(title="Second plot",row=2,col=1)
 curve = p.plot()                        # create an empty "plot" (a curve to plot)
 curve2 = p2.plot()
