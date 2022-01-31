@@ -28,6 +28,9 @@ class DataLogger():
 
     # region setup
     def setCollectionLen(self, nChan, fs, collection_time ):
+        # nChan : number of Channels used for EMG sampling 
+        # fs : sampling freqency
+        # collection_time : duh 
         """Allocates empty data container for streaming based on number of seconds and channels"""
         # np arrays are row-major
         self.data_log = np.zeros([nChan, int(fs*(collection_time)+400)])
@@ -69,7 +72,7 @@ class DataLogger():
                     if not self.trigged and trigDelay > 3:
                         self.daq.trig()
                         self.trigged = True
-                    outArr = [[] for i in range(len(self.dataStreamIdx))]
+                    outArr = [[] for i in range(len(self.dataStreamIdx))]  
                     for j in range(len(self.dataStreamIdx)):
                         # right now getting data from 0, 2, ... channels (found in self.dataStreamIdx)
                         outArr[j].append(np.asarray(DataOut[self.dataStreamIdx[j]][0]))
@@ -79,6 +82,8 @@ class DataLogger():
         print("Finished getting data " + str(threading.get_native_id()))
 
     def logDataFromQueue(self):
+        #TODO ask JD about how the data is stored locally in this configuration. Will need to use
+        # local storage if implementing additional function and thread for GUI update
         """Gets data from self.data_queue and stores it in array. When collection is finished, stops collection."""
         print("Starting log " + str(threading.get_native_id()))
         while not self.pauseFlag:
@@ -101,17 +106,26 @@ class DataLogger():
                     self.stimcount += 1
                     self.resetCollectionLen()
         self.pauseFlag = False
-                    
+
+    def updateGui(self):
+        # TODO: Implement plot updates for each sensor within this function. May use additional
+        # function to intialize and design GUI, may build an object outside this script and use main()
+        # to fill data windows for visualization during stimulus. 
+        pass
+
     def threadManager(self):
         """Starts thread to run data retrevial and data logging."""
         t1 = threading.Thread(target= self.getDataFromSensors)
         t2 = threading.Thread(target=self.logDataFromQueue)
-
+        # t3 = threading.Thread(target = self.updateGui)
+      
         t1.start()
         t2.start()
+        # t3.start()
 
         t1.join()
         t2.join()
+        # t3.join()
 
     # endregion
 

@@ -1,31 +1,26 @@
+
 from PySide2.QtWidgets import QApplication, QWidget, QVBoxLayout,QPushButton
 from PySide2.QtCore import QTimer,QRunnable,Slot,QThreadPool
 import pyqtgraph as pg
 import numpy as np
-import random
-import time
 
 class Worker(QRunnable):
-    def __init__(self,*args,**kwargs):
+    def __init__(self,device,stopflag):
         super(Worker,self).__init__()
-        self.args=args
-        self.kwargs=kwargs
+        self.device = device
+        self.stopflag=stopflag
     @Slot()
     def run(self):
         print("Starting Worker thread")
         # your code here
-        t=0
-        while not self.args[-1][0]:
-            time.sleep(0.01)
-            t+=1
-            self.args[0].append(random.random())
-            self.args[1].append(t//10)
-            self.args[2].append(np.sin(0.2*t))
- 
+        while not self.stopflag[0]:
+            self.device.processData()
 
 class myWidget(QWidget):
     def __init__(self,in_queue,in_queue2,in_queue3,device):
         super(myWidget, self).__init__()
+
+        self.device = device
 
         # QTstuff
         self.button = QPushButton("Start")
@@ -70,20 +65,9 @@ class myWidget(QWidget):
     def start_callback(self):
         print("Started Worker")
         self.stop_flag = [False]
-        worker = Worker(self.queue, self.queue2, self.queue3, self.stop_flag)
+        worker = Worker(self.device,self.stop_flag)
         self.threadpool.start(worker)
 
     def stop_callback(self):
-        print("Stopp flag set")
+        print("Stop flag set")
         self.stop_flag[0] = True
-
-if __name__ == "__main__":
-
-    app = QApplication(sys.argv)
-    my_queue = deque(maxlen=500)
-    my_queue2 = deque(maxlen=500)
-    my_queue3 = deque(maxlen=500)
-    device = 5
-    widget = myWidget(my_queue,my_queue2,my_queue3,device)
-    widget.show()
-    app.exec_()

@@ -8,7 +8,7 @@
             "name": "emg logging",
             "type": "python",
             "request": "launch",
-            "program": "C:\\Users\\j.d\\Documents\\EMGs\\single-pulse-emg\\run_acquisition_multithreaded.py",
+            "program": "C:\\Users\\j.d\\Documents\\EMGs\\single-pulse-emg\\deviceManager_testing.py",
             "console": "integratedTerminal"
         }
     ]

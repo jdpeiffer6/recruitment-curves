@@ -89,22 +89,30 @@ class deviceManager():
     def processData(self):
         "Processes Trignobase Data from Delsys and place into deque passed into function"
         outArray = self.GetData()
+        param = (len(self.dataStreamIdx),52)
+        # TODO: 52 may not be constant packet size, need to automate!
+        filler = np.zeros(param)
         if outArray is not None:
             # for k in range(TrigBase.SensorsFound): #indexing via sensor
-                # for i in range(TrigBase.SensorsFound):
+                for i in self.dataStreamIdx:
                     # Appends EMG Data (52 packets per sample)
                     for j in range(outArray[0][0].shape[0]):
-                        self.deque1.append(outArray[0][0][j])
-                        self.deque2.append(outArray[4][0][j])
-                        self.deque3.append(outArray[8][0][j])
+                        # self.deque1.append(outArray[0][0][j])
+                        # self.deque2.append(outArray[4][0][j])
+                        # self.deque3.append(outArray[8][0][j])
+
+                        filler[int(i/4)][j] = (outArray[i][0][j])
+
                     # Appends Gyro Data (4 packets per sample)
                     for j in range(outArray[1][0].shape[0]):
-                       pass 
+                        pass 
                     try: 
                         self.packetCount += len(outArray[0])
                         self.sampleCount += len(outArray[0][0])
                     except: 
                         pass
+                self.deque1.append(filler)
+                print("data filled")
                     # TODO: actually put data in correct data_queues
                     # TODO: probaly dont need the try/exception here
                 
