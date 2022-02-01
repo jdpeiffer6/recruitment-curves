@@ -1,4 +1,4 @@
-from trialDeviceManager import *
+from deviceManager import *
 from collections import deque
 
 
